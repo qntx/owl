@@ -341,6 +341,7 @@ impl Reaction {
             // SAFETY: `reference_inbox_id` is a C string allocated by the FFI layer (or null, handled by `take_c_string`).
             reference_inbox_id: unsafe { take_c_string(ffi.reference_inbox_id) }
                 .unwrap_or_default(),
+            // SAFETY: `sender_inbox_id` is a C string allocated by the FFI layer (or null, handled by `take_c_string`).
             sender_inbox_id: unsafe { take_c_string(ffi.sender_inbox_id) }.unwrap_or_default(),
             action: ReactionAction::from_ffi(ffi.action as i32)
                 .unwrap_or(ReactionAction::Unspecified),
