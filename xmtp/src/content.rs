@@ -7,7 +7,6 @@
 use std::collections::BTreeMap;
 
 use prost::Message as ProstMessage;
-use xmtp_sys::XmtpFfiReaction;
 
 use crate::conversation::{Conversation, Message};
 use crate::error::Result;
@@ -70,17 +69,14 @@ pub struct ReactionV2 {
     /// Inbox ID of the sender of the referenced message.
     #[prost(string, tag = "2")]
     pub reference_inbox_id: String,
-    /// Inbox ID of the reaction sender.
-    #[prost(string, tag = "3")]
-    pub sender_inbox_id: String,
     /// Reaction action.
-    #[prost(enumeration = "ReactionAction", tag = "4")]
+    #[prost(enumeration = "ReactionAction", tag = "3")]
     pub action: i32,
     /// The emoji / shortcode / custom string.
-    #[prost(string, tag = "5")]
+    #[prost(string, tag = "4")]
     pub content: String,
     /// Content schema.
-    #[prost(enumeration = "ReactionSchema", tag = "6")]
+    #[prost(enumeration = "ReactionSchema", tag = "5")]
     pub schema: i32,
 }
 
@@ -334,7 +330,7 @@ pub struct Reaction {
 
 impl Reaction {
     /// Convert a single FFI reaction (already dereferenced) into the safe SDK type.
-    pub(crate) fn from_ffi(ffi: &XmtpFfiReaction) -> Self {
+    pub(crate) fn from_ffi(ffi: &xmtp_sys::XmtpFfiReaction) -> Self {
         Self {
             // SAFETY: `reference` is a C string allocated by the FFI layer (or null, handled by `take_c_string`).
             reference: unsafe { take_c_string(ffi.reference) }.unwrap_or_default(),
@@ -428,7 +424,6 @@ pub fn encode_reaction(reference: &str, emoji: &str, action: ReactionAction) -> 
     let rv2 = ReactionV2 {
         reference: reference.into(),
         reference_inbox_id: String::new(),
-        sender_inbox_id: String::new(),
         action: action as i32,
         content: emoji.into(),
         schema: ReactionSchema::Unicode as i32,
@@ -560,7 +555,7 @@ pub fn decode(raw: &[u8]) -> Result<Content> {
             Ok(Content::Reaction(Reaction {
                 reference: rv2.reference,
                 reference_inbox_id: rv2.reference_inbox_id,
-                sender_inbox_id: rv2.sender_inbox_id,
+                sender_inbox_id: String::new(),
                 action: ReactionAction::try_from(rv2.action).unwrap_or(ReactionAction::Unspecified),
                 content: rv2.content,
                 schema: ReactionSchema::try_from(rv2.schema).unwrap_or(ReactionSchema::Unspecified),
