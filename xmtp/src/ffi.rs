@@ -9,7 +9,6 @@ use std::ptr::NonNull;
 
 use crate::content::Reaction;
 use crate::error::{Result, XmtpError};
-use xmtp_sys::XmtpFfiReaction;
 
 /// RAII wrapper for an opaque FFI pointer. Calls `free` on drop.
 pub(crate) struct OwnedHandle<T> {
@@ -230,7 +229,7 @@ pub(crate) unsafe fn borrow_nullable_string(ptr: *mut c_char) -> Option<String> 
 }
 
 pub(crate) unsafe fn reactions_from_raw_parts(
-    ptr: *mut XmtpFfiReaction,
+    ptr: *mut xmtp_sys::XmtpFfiReaction,
     len: i32,
 ) -> Vec<Reaction> {
     if ptr.is_null() || len <= 0 {
